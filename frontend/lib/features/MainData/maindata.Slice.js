@@ -53,13 +53,71 @@ export const commentPost = createAsyncThunk('posts/commentPost', async ( payload
             },
         });
         return response.data;
-    });
+});
+
+export const savePost = createAsyncThunk("posts/savePost", async (payload, thunkAPI) => {
+    let token = null;
+    if (typeof window !== 'undefined') {
+        token = localStorage.getItem('token');
+    }
+    if (!token) {
+        return thunkAPI.rejectWithValue('User not authenticated');
+    }
+
+    const response = await axios.post(`http://localhost:8000/save/${payload}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`, // Pass the token here
+            },
+        }
+    );
+    return response.data;
+  });
+  
+  export const unsavePost = createAsyncThunk("posts/unsavePost", async (payload, thunkAPI) => {
+    let token = null;
+    if (typeof window !== 'undefined') {
+        token = localStorage.getItem('token');
+    }
+    if (!token) {
+        return thunkAPI.rejectWithValue('User not authenticated');
+    }
+
+    const response = await axios.post(`http://localhost:8000/unsave/${payload}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`, // Pass the token here
+            },
+        }
+    );
+    return response.data;
+  });
+  
+  export const fetchSavedPosts = createAsyncThunk("posts/fetchSavedPosts", async () => {
+    let token = null;
+    if (typeof window !== 'undefined') {
+        token = localStorage.getItem('token');
+    }
+    if (!token) {
+        return thunkAPI.rejectWithValue('User not authenticated');
+    }
+
+    const response = await axios.get(`http://localhost:8000/saved`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`, // Pass the token here
+            },
+        }
+    );
+    return response.data;
+  });
 
 // Slice
 const postsSlice = createSlice({
     name: 'posts',
     initialState: {
         posts: [],
+        savedPosts: [],
         loading: false,
         error: null
       },
@@ -82,13 +140,20 @@ const postsSlice = createSlice({
                 if (index !== -1) {
                     state.posts[index] = action.payload;
                 }
-            })
-            .addCase(commentPost.fulfilled, (state, action) => {
+            }).addCase(commentPost.fulfilled, (state, action) => {
                 const index = state.posts.findIndex((post) => post._id === action.payload._id);
                 if (index !== -1) {
                     state.posts[index] = action.payload;
                 }
-            })
+            }).addCase(savePost.fulfilled, (state, action) => {
+                state.savedPosts.push(action.payload);
+              })
+              .addCase(unsavePost.fulfilled, (state, action) => {
+                state.savedPosts = state.savedPosts.filter((id) => id !== action.payload);
+              })
+              .addCase(fetchSavedPosts.fulfilled, (state, action) => {
+                state.savedPosts = action.payload;
+              });
     },
 });
 export default postsSlice.reducer;
