@@ -47,7 +47,7 @@ const Navbar = () => {
         </div>
 
         <div className="header__buttons header__buttons--desktop">
-          <Link to={`/save`}>
+          <Link href="/save">
             <svg
               width="24"
               height="24"

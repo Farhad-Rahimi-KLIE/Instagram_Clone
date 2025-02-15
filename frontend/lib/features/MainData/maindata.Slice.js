@@ -64,7 +64,7 @@ export const savePost = createAsyncThunk("posts/savePost", async (payload, thunk
         return thunkAPI.rejectWithValue('User not authenticated');
     }
 
-    const response = await axios.post(`http://localhost:8000/save/${payload}`,
+    const response = await axios.post(`http://localhost:8000/save/${payload}`,{},
         {
             headers: {
                 Authorization: `Bearer ${token}`, // Pass the token here
@@ -75,22 +75,8 @@ export const savePost = createAsyncThunk("posts/savePost", async (payload, thunk
   });
   
   export const unsavePost = createAsyncThunk("posts/unsavePost", async (payload, thunkAPI) => {
-    let token = null;
-    if (typeof window !== 'undefined') {
-        token = localStorage.getItem('token');
-    }
-    if (!token) {
-        return thunkAPI.rejectWithValue('User not authenticated');
-    }
-
-    const response = await axios.post(`http://localhost:8000/unsave/${payload}`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`, // Pass the token here
-            },
-        }
-    );
-    return response.data;
+    const response = await axios.post(`http://localhost:8000/unsave/${payload}`);
+    return {postId, unsave: response.data.unsave};
   });
   
   export const fetchSavedPosts = createAsyncThunk("posts/fetchSavedPosts", async () => {
@@ -146,7 +132,10 @@ const postsSlice = createSlice({
                     state.posts[index] = action.payload;
                 }
             }).addCase(savePost.fulfilled, (state, action) => {
-                state.savedPosts.push(action.payload);
+                const index = state.savedPosts.findIndex((post) => post._id === action.payload._id);
+                if (index !== -1) {
+                    state.savedPosts[index] = action.payload;
+                }
               })
               .addCase(unsavePost.fulfilled, (state, action) => {
                 state.savedPosts = state.savedPosts.filter((id) => id !== action.payload);
