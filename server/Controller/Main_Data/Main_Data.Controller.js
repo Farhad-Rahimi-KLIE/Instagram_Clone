@@ -100,11 +100,14 @@ class Posts_Controller {
 
     static Save_Post = async (req, res) => {
         try {
-            const user = await User.findById(req.user.id);
-            const postId = req.params.postId;
+            const user = await User.findById(req.author._id);
+            // const userId = req.auth.userId;
+            const { id } = req.params;
+
+            console.log(user)
         
-            if (!user.savedPosts.includes(postId)) {
-              user.savedPosts.push(postId);
+            if (!user.savedPosts.includes(id)) {
+              user.savedPosts.push(id);
               await user.save();
             }
         
@@ -116,7 +119,7 @@ class Posts_Controller {
 
     static Unsave_Post = async (req, res) => {
         try {
-            const user = await User.findById(req.user.id);
+            const user = await User.findById(req.author._id);
             user.savedPosts = user.savedPosts.filter(
               (id) => id.toString() !== req.params.postId
             );
@@ -127,6 +130,17 @@ class Posts_Controller {
             res.status(500).json({ message: "Server error" });
           }
     };
+
+
+    static Saved = async (req, res) => {
+        try {
+            const user = await User.findById(req.author._id).populate("savedPosts");
+            res.status(200).json(user.savedPosts);
+          } catch (error) {
+            res.status(500).json({ message: "Server error" });
+          }
+    };
+
 
 }
 module.exports = Posts_Controller;
