@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import user from '../../public/assets/default-user.png'
+import Link from 'next/link'
 const Navbar = () => {
 
   return (
@@ -46,7 +47,7 @@ const Navbar = () => {
         </div>
 
         <div className="header__buttons header__buttons--desktop">
-          <a href="#">
+          <Link to={`/save`}>
             <svg
               width="24"
               height="24"
@@ -60,7 +61,7 @@ const Navbar = () => {
                 strokeWidth="2"
               />
             </svg>
-          </a>
+          </Link>
               
         </div>
       </nav>
