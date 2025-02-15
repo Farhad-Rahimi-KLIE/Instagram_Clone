@@ -1,4 +1,5 @@
 const Post = require("../../Models/Post.modules");
+const User = require("../../Models/Users.modules");
 class Posts_Controller {
 
     static Add_Post = async (req, res) => {
@@ -96,5 +97,36 @@ class Posts_Controller {
             res.status(500).json({ error: err.message });
         }
     };
+
+    static Save_Post = async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id);
+            const postId = req.params.postId;
+        
+            if (!user.savedPosts.includes(postId)) {
+              user.savedPosts.push(postId);
+              await user.save();
+            }
+        
+            res.status(200).json({ message: "Post saved successfully" });
+          } catch (error) {
+            res.status(500).json({ message: "Server error" });
+          }
+    };
+
+    static Unsave_Post = async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id);
+            user.savedPosts = user.savedPosts.filter(
+              (id) => id.toString() !== req.params.postId
+            );
+        
+            await user.save();
+            res.status(200).json({ message: "Post unsaved successfully" });
+          } catch (error) {
+            res.status(500).json({ message: "Server error" });
+          }
+    };
+
 }
 module.exports = Posts_Controller;
